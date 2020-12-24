@@ -22,6 +22,8 @@ messageBody = f"""\
   </body>
 </html>
 """
+
+
 messageAsHTML = MIMEText(messageBody, "html")
 message.attach(messageAsHTML)
 context = ssl.create_default_context()
@@ -31,3 +33,6 @@ try:
         server.sendmail(sender_email, sender_email, message.as_string())
 except Exception as e:
     print("Could not authenticate sender")
+# TODO: add config file
+# TODO: add better exception handling
+# TODO: remember the really important thing you said you wouldn't forget but did  
