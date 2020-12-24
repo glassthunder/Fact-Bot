@@ -9,8 +9,6 @@ password = ""
 port = 465  #SSL
 smtp_server = "" #"smtp.gmail.com"
 
-
-
 def init():
     global sender_email
     global password
