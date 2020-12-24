@@ -1,1 +1,3 @@
-prawcore==1.5.0praw==7.1.0
+prawcore==1.5.0praw==7.1.0
+
+be sure to run with python 3 if the current version of python (usually 2.7) doesn't work
