@@ -1,7 +1,7 @@
-import smtplib, ssl, os, platform, praw
+import smtplib, ssl, os, platform, praw, webbrowser, requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-
+from bs4 import BeautifulSoup
 #Gmail username devthrowaway0
 #Gmail password throwawaythrowaway
 sender_email = ""
@@ -10,13 +10,20 @@ port = 465  #SSL
 smtp_server = "" #"smtp.gmail.com"
 message = MIMEMultipart("alternative")
 message["Subject"] = "Daily Dose of Awesome"
-name = os.name
 platform = platform.system();
 id = "PDjyla087HtZlA"
 version = "1.0"
 user = "DevThrowaway0"
 agent = f"{platform}:{id}:{version} (by u/{user})"
 secret = "QXagmo14R-X_wcopdYjKF6d5KUW6Gw"
+
+def query_wikipedia():
+    queryResult = []
+    link = "https://en.wikipedia.org/wiki/Special:Random"
+    request = requests.get(link)
+    scraper = BeautifulSoup(request.content, "html.parser")
+    title = scraper.find(class_= "firstHeading").text
+    return f"https://en.wikipedia.org/wiki/{title}"
 
 def htmlMessage():
     reddit = praw.Reddit(client_id=id,client_secret=secret,user_agent=agent)
@@ -26,14 +33,10 @@ def htmlMessage():
         msg = msg + f"<a href='{top.url}'>{i}. {top.title}</a> <br>"
         i = i + 1
 
+    article = query_wikipedia()
+    msg = msg + f"<br><br><a href='{article}'>Click for a randomly generated wikipedia article!</a>"
     fullMessage = f"""\
-    <html>
-      <body style="background-color:#fff0f5">
-        <p>
-           {msg}
-        </p>
-      </body>
-    </html>
+    <html><body style="background-color:#fff0f5"><p>{msg}</p></body></html>
     """
     return fullMessage
 
@@ -57,9 +60,6 @@ def init():
                 smtp_server = line
                 file.close()
                 break;
-            else:
-                raise IOError
-
     except (FileNotFoundError, IOError) as e:
         print("It seems a config file does not exist. Let's create one.")
         file = open("./config.txt", 'w')
@@ -89,4 +89,6 @@ message["From"] = sender_email
 message["To"] = sender_email
 sendEmailToClient()
     # TODO: add better exception handling
-    # TODO: remember the really important thing you said you wouldn't forget but did
+    # TODO: make program run on a daily schedule
+    # TODO: make script run on startup
+    # TODO: hide secret information and login information. Probably should've been done from the start but whatever.
