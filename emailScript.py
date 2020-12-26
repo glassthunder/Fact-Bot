@@ -1,11 +1,11 @@
-import smtplib, ssl, os, platform, praw, webbrowser, requests
+import smtplib, ssl, os, platform, praw, webbrowser, requests, time, schedule
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from bs4 import BeautifulSoup
 sender_email = ""
 password = ""
 port = 465  #Default Gmail SSL port
-smtp_server = "" 
+smtp_server = ""
 message = MIMEMultipart("alternative")
 message["Subject"] = "Daily Dose of Awesome"
 platform = platform.system();
@@ -89,7 +89,10 @@ def sendEmailToClient():
 init()
 message["From"] = sender_email
 message["To"] = sender_email
-sendEmailToClient()
+schedule.every().day.at("6:00").do(sendEmailToClient)
+
+if __name__ == "__main__":
+    while True:
+        schedule.run_pending();
     # TODO: add better exception handling
-    # TODO: make program run on a daily schedule
     # TODO: make script run on startup
