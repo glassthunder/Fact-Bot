@@ -1,1 +1,1 @@
-prawcore==1.5.0praw==7.1.0requests==2.23.0beautifulsoup4==4.8.2Be sure to run with python 3 if 2.7 doesn't work
+prawcore==1.5.0praw==7.1.0requests==2.23.0beautifulsoup4==4.8.2schedule==0.6.0Be sure to run with python 3 if 2.7 doesn't work
