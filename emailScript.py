@@ -2,20 +2,18 @@ import smtplib, ssl, os, platform, praw, webbrowser, requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from bs4 import BeautifulSoup
-#Gmail username devthrowaway0
-#Gmail password throwawaythrowaway
 sender_email = ""
 password = ""
-port = 465  #SSL
-smtp_server = "" #"smtp.gmail.com"
+port = 465  #Default Gmail SSL port
+smtp_server = "" 
 message = MIMEMultipart("alternative")
 message["Subject"] = "Daily Dose of Awesome"
 platform = platform.system();
-id = "PDjyla087HtZlA"
+id = os.environ.get("REDID")
 version = "1.0"
-user = "DevThrowaway0"
+user = os.environ.get("REDUSER")
 agent = f"{platform}:{id}:{version} (by u/{user})"
-secret = "QXagmo14R-X_wcopdYjKF6d5KUW6Gw"
+secret = os.environ.get("REDSECRET")
 
 def query_wikipedia():
     queryResult = []
@@ -45,7 +43,7 @@ def init():
     global password
     global smtp_server
     try:
-        file = open("./config.txt", 'r') #should probably put this one directory back after we package python files
+        file = open("./config.txt", 'r')
         for i, current in enumerate(file):
             line = current.strip()
             if len(line) == 0:
@@ -58,6 +56,9 @@ def init():
                 continue
             if i == 2:
                 smtp_server = line
+                continue
+            if i == 3:
+                port = int(line)
                 file.close()
                 break;
     except (FileNotFoundError, IOError) as e:
@@ -65,12 +66,13 @@ def init():
         file = open("./config.txt", 'w')
         sender_email = input("Your email: ")
         password = input("Password (which is stored on your machine and only accessible by you): ")
-        smtp_server = input("Lastly, your mail server (a lookup might be required): ")
-        file.write(f"{sender_email}\n{password}\n{smtp_server}")
+        smtp_server = input("Your mail server address, ex: smtp.gmail.com (a lookup might be required): ")
+        port = eval(input("Lastly, your mail server's ssl port (Gmail default is 465) : "))
+        file.write(f"{sender_email}\n{password}\n{smtp_server}\n{port}")
         print(f"Config file complete! Make sure to keep this file safe as it contains private information.")
         file.close()
 
-def sendEmailToClient(): #will later take links generated from wikipedia and reddit as input
+def sendEmailToClient():
     messageBody = htmlMessage()
     messageAsHTML = MIMEText(messageBody, "html")
     message.attach(messageAsHTML)
@@ -79,7 +81,7 @@ def sendEmailToClient(): #will later take links generated from wikipedia and red
         with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
             server.login(sender_email, password)
             server.sendmail(sender_email, sender_email, message.as_string())
-            print("Email sent")
+            print("Email sent!")
     except Exception as e:
         print("Could not authenticate sender")
         print(f"{sender_email}\n{password}\n{smtp_server}")
@@ -91,4 +93,3 @@ sendEmailToClient()
     # TODO: add better exception handling
     # TODO: make program run on a daily schedule
     # TODO: make script run on startup
-    # TODO: hide secret information and login information. Probably should've been done from the start but whatever.
