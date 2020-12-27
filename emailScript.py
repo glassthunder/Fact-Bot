@@ -2,7 +2,7 @@ import smtplib, ssl, os, platform, praw, webbrowser, requests, time, schedule
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from bs4 import BeautifulSoup
-sender_email = ""
+userEmail = ""
 password = ""
 port = 465  #Default Gmail SSL port
 smtp_server = ""
@@ -39,7 +39,7 @@ def htmlMessage():
     return fullMessage
 
 def init():
-    global sender_email
+    global userEmail
     global password
     global smtp_server
     try:
@@ -49,7 +49,7 @@ def init():
             if len(line) == 0:
                 raise IOError
             if i == 0:
-                sender_email = line
+                userEmail = line
                 continue
             if i == 1:
                 password = line
@@ -64,13 +64,15 @@ def init():
     except (FileNotFoundError, IOError) as e:
         print("It seems a config file does not exist. Let's create one.")
         file = open("./config.txt", 'w')
-        sender_email = input("Your email: ")
+        userEmail = input("Your email: ")
         password = input("Password (which is stored on your machine and only accessible by you): ")
         smtp_server = input("Your mail server address, ex: smtp.gmail.com (a lookup might be required): ")
         port = eval(input("Lastly, your mail server's ssl port (Gmail default is 465) : "))
-        file.write(f"{sender_email}\n{password}\n{smtp_server}\n{port}")
+        file.write(f"{userEmail}\n{password}\n{smtp_server}\n{port}")
         print(f"Config file complete! Make sure to keep this file safe as it contains private information.")
         file.close()
+    except Exception as e:
+        print("An unexpected error occured")
 
 def sendEmailToClient():
     messageBody = htmlMessage()
@@ -79,20 +81,22 @@ def sendEmailToClient():
     context = ssl.create_default_context()
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
-            server.login(sender_email, password)
-            server.sendmail(sender_email, sender_email, message.as_string())
+            server.login(userEmail, password)
+            server.sendmail(userEmail, userEmail, message.as_string())
             print("Email sent!")
-    except Exception as e:
-        print("Could not authenticate sender")
-        print(f"{sender_email}\n{password}\n{smtp_server}")
+    except (smtplib.SMTPSenderRefused, smtplib.SMTPRecipientsRefused, smtplib.SMTPDataError) as e:
+        print("Message was refused.")
+    except  smtplib.SMTPConnectError as e:
+        print("Connection could not be established.")
+    except smtplib.SMTPAuthenticationError as e:
+        print("Could not authenicate.")
+    except smtplib.SMTPException as e:
+        print("An unexpected error occured")
 
 init()
-message["From"] = sender_email
-message["To"] = sender_email
-schedule.every().day.at("6:00").do(sendEmailToClient)
-
+message["From"] = userEmail
+message["To"] = userEmail
+schedule.every().day.at("06:00").do(sendEmailToClient)
 if __name__ == "__main__":
     while True:
-        schedule.run_pending();
-    # TODO: add better exception handling
-    # TODO: make script run on startup
+        schedule.run_pending()
